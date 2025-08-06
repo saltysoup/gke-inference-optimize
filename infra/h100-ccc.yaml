@@ -1,0 +1,28 @@
+apiVersion: cloud.google.com/v1
+kind: ComputeClass
+metadata:
+  name: h100-ccc
+spec:
+  activeMigration:
+    optimizeRulePriority: false
+  priorities:
+  - machineType: a3-highgpu-1g
+    storage:
+      localSSDCount: 16
+  - nodepools: ['h100-ccc-1']
+  - gpu:
+      type: "nvidia-h100-80gb"
+      count: 1
+      driverVersion: "latest"
+  - flexStart:
+      enabled: true
+  - machineType: a3-highgpu-8g
+    storage:
+      localSSDCount: 16
+  - nodepools: ['h100-ccc-8']
+  - gpu:
+      type: "nvidia-h100-80gb"
+      count: 8
+      driverVersion: "latest"
+  - flexStart:
+      enabled: true

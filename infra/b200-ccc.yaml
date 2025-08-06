@@ -1,0 +1,18 @@
+apiVersion: cloud.google.com/v1
+kind: ComputeClass
+metadata:
+  name: b200-ccc
+spec:
+  activeMigration:
+    optimizeRulePriority: false
+  priorities:
+  - machineType: a4-highgpu-8g
+    storage:
+      localSSDCount: 32
+  - nodepools: ['b200-ccc']
+  - gpu:
+      type: "nvidia-b200"
+      count: 1
+      driverVersion: "latest"
+  - flexStart:
+      enabled: true

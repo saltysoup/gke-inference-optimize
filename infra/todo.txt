@@ -1,0 +1,66 @@
+
+# testing
+
+# tools
+
+Server: vLLM
+vLLM client benchmarking: genai-perf/guidellm
+eval: lm-evaluation-harness
+
+# Outcomes
+
+## Premise
+Rapid changes, from new infrastructure (accelerators, storage) to platform features and new models.
+
+How can I test and find optimal configs and results to get the best results? Exploring model agnostic approach.
+
+1. Learn how to benchmark to find optimal configs and results
+2. Learn how to evaluate models for user experience
+
+### Background
+I have 2 use cases, offline summarization and online inference serving.
+I want to maximise cost/perf efficiency for both.
+For offline usecase, cost per 1M token. No latency requirement.
+For online usecase, rooftline of TTFT 300ms - max cost/perf
+
+
+# Scenarios
+
+## Scenario 1: baseline
+Setup: H100 on GKE
+Model: Qwen3-8b (offline), Qwen/Qwen3-235B-A22B-Thinking-2507 (online)
+Instructions:
+- vllm serve
+- benchmark_serving.py (request rate inf)
+- not good because TTFT too high for online
+- 
+
+## Scenario 1.1: proper baseline
+Setup: H100 on GKE
+Model: Qwen3-8b (offline), Qwen/Qwen3-235B-A22B-Thinking-2507 (online)
+Instructions:
+- vllm serve
+- use genai-perf/guidellm
+- find max request rate under 300 ms TTFT for online
+- - max-num-seqs
+- - max-num-batched-tokens
+- - client side request rate
+- find best config for offline
+- Pure request per sec
+
+
+## Scenario 3: different accelerators: v6e, H200, B200
+Setup: v6e, H200, B200 on GKE
+Model: Qwen3-8b (offline), Qwen/Qwen3-235B-A22B-Thinking-2507 (online)
+
+## Scenario 4: speculative decoding
+Setup: H100 on GKE
+Model: Qwen3-8b (offline), Qwen/Qwen3-235B-A22B-Thinking-2507 (online)
+
+## Scenario 5: quantization
+Setup: H100 on GKE
+Model: Qwen3-8b (offline), Qwen/Qwen3-235B-A22B-Thinking-2507 (online)
+Model 2: Qwen3-8b fp8 (offline), Qwen/Qwen3-235B-A22B-Thinking-2507 fp8 (online)
+Model 3: Qwen3-8b fp4 (offline), NVFP4/Qwen3-235B-A22B-Thinking-2507-FP4 (online)
+
+## Scenario 6: GKE inference gateway

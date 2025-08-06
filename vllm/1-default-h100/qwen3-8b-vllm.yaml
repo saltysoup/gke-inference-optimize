@@ -1,0 +1,70 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-h100-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model-server
+  template:
+    metadata:
+      labels:
+        app: model-server
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: "h100-ccc"
+      containers:
+      - name: inference-server
+        image: vllm/vllm-openai:v0.10.0
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        - name: VLLM_USE_V1
+          value: "1"
+        #- name: VLLM_DISABLE_COMPILE_CACHE
+        #  value: "1"
+        command:
+          - sh
+          - -c
+          #- "vllm serve 'meta-llama/Llama-3.1-8B-Instruct' --port 8080 --disable-log-requests --seed 42 --max-model-len 8192 --gpu-memory-utilization 0.95 --trust-remote-code --tensor-parallel-size 1"
+          #- "vllm serve 'meta-llama/Llama-3.3-70B-Instruct' --port 8080 --disable-log-requests --seed 42 --max-model-len 2560 --gpu-memory-utilization 0.95 --trust-remote-code --tensor-parallel-size 2"
+          - "vllm serve 'meta-llama/Llama-3.3-70B-Instruct' --port 8080 --disable-log-requests --seed 42 --max-model-len 8192 --gpu-memory-utilization 0.95 --trust-remote-code --tensor-parallel-size 4"
+          #- "vllm serve 'mistralai/Mixtral-8x7B-Instruct-v0.1' --port 8080 --disable-log-requests --seed 42 --max-model-len 8192 --gpu-memory-utilization 0.95 --trust-remote-code --tensor-parallel-size 2"          
+          #- "vllm serve meta-llama/Llama-4-Scout-17B-16E-Instruct --max-model-len 131072 --port 8080 --disable-log-requests --gpu-memory-utilization 0.95 --trust-remote-code --tensor-parallel-size 4 --seed 42"
+          #- "vllm serve 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8' --max-model-len 8192 --port 8080 --disable-log-requests --gpu-memory-utilization 0.95 --trust-remote-code --tensor-parallel-size 8 --seed 42"
+        resources:
+          limits:
+            nvidia.com/gpu: "4"
+        ports:
+          - containerPort: 8080
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        volumeMounts:
+          - mountPath: /dev/shm
+            name: dshm
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: model-server
+  type: ClusterIP

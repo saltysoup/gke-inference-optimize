@@ -21,6 +21,7 @@ export DRIVER_VERSION="latest"
 export WORKLOAD_IDENTITY=$PROJECT.svc.id.goog
 export BUCKET_NAME="ikwak-stuff"
 export KSA_NAME="gke-ksa"
+export HF_TOKEN="" # Update
 
 # Create GKE cluster
 
@@ -78,3 +79,6 @@ kubectl create serviceaccount $KSA_NAME
 
 # Grant KSA read-write access to bucket
 gcloud storage buckets add-iam-policy-binding gs://$BUCKET_NAME --member "principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$WORKLOAD_IDENTITY/subject/ns/default/sa/$KSA_NAME"   --role "roles/storage.admin"
+
+# Create secret for HF
+kubectl create secret generic hf-secret   --from-literal=hf_api_token=${HF_TOKEN}   --dry-run=client -o yaml | kubectl apply -f -

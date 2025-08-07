@@ -2,12 +2,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: qwen3-8b-vllm-h100
+  name: qwen3-235b-a22b-vllm-h100
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: qwen3-8b-vllm-h100
+      app: qwen3-235b-a22b-vllm-h100
   template:
     metadata:
       annotations:
@@ -16,7 +16,7 @@ spec:
         gke-gcsfuse/memory-limit: "0"
         gke-gcsfuse/ephemeral-storage-limit: "0"
       labels:
-        app: qwen3-8b-vllm-h100
+        app: qwen3-235b-a22b-vllm-h100
     spec:
       serviceAccountName: "gke-ksa"
       nodeSelector:
@@ -37,12 +37,12 @@ spec:
         command:
           - sh
           - -c
-          - "vllm serve /bucket/models/Qwen3-8B --port 8080 --disable-log-requests --seed 42 --max-model-len 8192 --gpu-memory-utilization 0.95 --tensor-parallel-size 1"
+          - "vllm serve /bucket/models/Qwen3-235B-A22B-Thinking-2507 --port 8080 --disable-log-requests --seed 42 --max-model-len 32768 --gpu-memory-utilization 0.95 --tensor-parallel-size 8"
         resources:
           limits:
-            nvidia.com/gpu: "1"
+            nvidia.com/gpu: "8"
           requests:
-            nvidia.com/gpu: "1"
+            nvidia.com/gpu: "8"
         ports:
           - containerPort: 8080
         readinessProbe:
@@ -70,7 +70,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: qwen3-8b-llm-service
+  name: qwen3-235b-a22b-llm-service
 spec:
   ports:
     - name: http
@@ -78,5 +78,5 @@ spec:
       protocol: TCP
       targetPort: 8080
   selector:
-    app: qwen3-8b-vllm-h100
+    app: qwen3-235b-a22b-vllm-h100
   type: ClusterIP

@@ -1,0 +1,41 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: guidellm-benchmark-8b
+spec:
+  template:
+    metadata:
+      labels:
+        app: guidellm-benchmark-8b
+    spec:
+      restartPolicy: OnFailure
+      nodeSelector:
+        cloud.google.com/gke-nodepool: "default-pool"
+      containers:
+      - name: guidellm-benchmark-8b
+        image: us-central1-docker.pkg.dev/gpu-launchpad-playground/gke-inference/benchmark-client:latest # modify
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        - name: MODEL
+          value: "Qwen/Qwen3-8B"
+        - name: CLUSTER_IP
+          value: "34.118.236.109" # kubectl get svc
+        command:
+          - sh
+          - -c
+          - "guidellm benchmark --target http://$CLUSTER_IP:8080 --model $MODEL --data 'source=benchmarks/sonnet.txt,prompt_tokens=2048,output_tokens=128,samples=1000' --rate-type sweep --max-seconds 1800"
+        resources:
+          limits:
+            cpu: "8"
+            memory: "16G"
+          requests:
+            cpu: "8"
+            memory: "16G"
+        ports:
+          - containerPort: 8080
+

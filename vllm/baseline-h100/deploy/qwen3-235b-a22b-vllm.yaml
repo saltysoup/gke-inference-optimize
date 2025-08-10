@@ -37,7 +37,7 @@ spec:
         command:
           - sh
           - -c
-          - "vllm serve /bucket/models/Qwen3-235B-A22B-Thinking-2507 --port 8080 --disable-log-requests --seed 42 --max-model-len 32768 --gpu-memory-utilization 0.95 --tensor-parallel-size 8"
+          - "vllm serve /bucket/models/Qwen3-235B-A22B-Thinking-2507 --served-model-name Qwen/Qwen3-235B-A22B-Thinking-2507 --port 8080 --disable-log-requests --seed 42 --max-model-len 32768 --gpu-memory-utilization 0.95 --tensor-parallel-size 8"
         resources:
           limits:
             nvidia.com/gpu: "8"

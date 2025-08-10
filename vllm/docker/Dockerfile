@@ -27,3 +27,5 @@ RUN pip install --upgrade pip && \
     pip install -v -r requirements/cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
     VLLM_TARGET_DEVICE=cpu python setup.py install
 
+RUN pip install guidellm
+

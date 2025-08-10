@@ -1,0 +1,43 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vllm-benchmark-8b
+spec:
+  template:
+    metadata:
+      labels:
+        app: vllm-benchmark-8b
+    spec:
+      restartPolicy: OnFailure
+      nodeSelector:
+        cloud.google.com/gke-nodepool: "default-pool"
+      containers:
+      - name: vllm-benchmark-8b
+        image: us-central1-docker.pkg.dev/gpu-launchpad-playground/gke-inference/benchmark-client:latest # modify
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        - name: MODEL
+          value: "/bucket/models/Qwen3-8B"
+        - name: TOKENIZER
+          value: "Qwen/Qwen3-8B"
+        - name: CLUSTER_IP
+          value: "34.118.235.51" # kubectl get svc
+        command:
+          - sh
+          - -c
+          - "vllm bench serve --backend vllm --host $CLUSTER_IP --port 8080 --model $MODEL --tokenizer $TOKENIZER --temperature 0.6 --top-p 0.95 --top-k 20 --min-p 0 --dataset-name random --random-input-len 2048 --random-output-len 128 --request-rate 60 --ignore-eos --percentile-metrics ttft,tpot,itl,e2el"
+        resources:
+          limits:
+            cpu: "8"
+            memory: "16G"
+          requests:
+            cpu: "8"
+            memory: "16G"
+        ports:
+          - containerPort: 8080
+
